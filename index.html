@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Aesthetic Archive — 个人美学灵感档案</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Noto Serif SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FAF7F2',
+                        stoneLight: '#F2ECE1',
+                        borderSubtle: '#E5DFD3',
+                        textMain: '#22201D',
+                        textMuted: '#736E67',
+                        accent: '#8C7A6B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Noto Serif SC', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF7F2;
+            color: #22201D;
+            font-family: 'Inter', 'Noto Serif SC', sans-serif;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF7F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D9D2C5;
+            border-radius: 2px;
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px -15px rgba(34, 32, 29, 0.04);
+        }
+        .drag-over {
+            background-color: #F2ECE1;
+            border: 1px dashed #8C7A6B;
+        }
+        @supports (-webkit-touch-callout: none) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        .filter-scroll {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .filter-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        @media (max-width: 640px) {
+            .modal-content-mobile {
+                max-height: 92vh;
+                border-radius: 16px 16px 0 0;
+                padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+            }
+        }
+        .resolve-editable {
+            transition: border-color 0.2s, background-color 0.2s;
+            border-bottom: 1px dashed transparent;
+        }
+        .resolve-editable:hover,
+        .resolve-editable:focus {
+            border-bottom-color: #D9D2C5;
+            outline: none;
+        }
+        .resolve-toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(2rem + env(safe-area-inset-bottom));
+            transform: translateX(-50%) translateY(20px);
+            background: #22201D;
+            color: #FAF7F2;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            padding: 8px 16px;
+            border-radius: 2px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .resolve-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-[#E5DFD3]">
+
+    <!-- 顶部导航 -->
+    <header class="w-full pt-10 md:pt-12 pb-6 px-6 md:px-20 flex justify-end items-center gap-6 md:gap-8 text-sm text-textMuted font-light"
+            style="padding-top: calc(2.5rem + env(safe-area-inset-top));">
+        <span id="recordCount" class="tracking-wider">收录：0</span>
+        <button onclick="handleAddClick()"
+                aria-label="新增"
+                title="新增记录"
+                class="w-9 h-9 md:w-8 md:h-8 flex items-center justify-center rounded-full text-textMain hover:text-accent active:text-accent transition-all text-2xl md:text-xl font-extralight leading-none select-none">
+            ＋
+        </button>
+    </header>
+
+    <!-- 主体内容区 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 md:px-20 py-4 md:py-8">
+
+        <!-- ============ 主页一级分类（竖排同级逻辑） ============ -->
+        <div class="flex items-center gap-8 mb-8 pb-4 text-xs uppercase tracking-widest overflow-x-auto filter-scroll whitespace-nowrap border-b border-borderSubtle/50">
+            <button onclick="filterTag('all')" id="tag-all" class="tag-btn text-textMain font-medium pb-1 border-b border-textMain transition-all shrink-0">ALL</button>
+            <button onclick="filterTag('色彩')" id="tag-色彩" class="tag-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all shrink-0">色彩</button>
+            <button onclick="filterTag('材质')" id="tag-材质" class="tag-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all shrink-0">材质</button>
+            <button onclick="filterTag('书籍')" id="tag-书籍" class="tag-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all shrink-0">书籍</button>
+            <button onclick="filterTag('网页')" id="tag-网页" class="tag-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all shrink-0">网页</button>
+            <button onclick="filterTag('定力')" id="tag-定力" class="tag-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all shrink-0 font-medium tracking-widest">定力</button>
+        </div>
+
+        <!-- ============ 定力分类下的子栏目（横向展示） ============ -->
+        <div id="resolveSubNav" class="hidden flex items-center justify-between mb-8 pb-3 text-xs tracking-wider border-b border-borderSubtle/30">
+            <div class="flex items-center gap-6">
+                <button onclick="switchResolveSub('train')" id="resolve-sub-train" class="resolve-sub-btn text-textMain font-medium pb-1 border-b border-textMain transition-all">训练的事</button>
+                <button onclick="switchResolveSub('quote')" id="resolve-sub-quote" class="resolve-sub-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all">句子</button>
+            </div>
+            <!-- OneLine 外部链接 -->
+            <a href="https://petalspig-a11y.github.io/OneLine/"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 text-textMuted hover:text-accent tracking-wider transition-all">
+                <span>OneLine 链接</span>
+                <span class="text-[10px]">&nearr;</span>
+            </a>
+        </div>
+
+        <!-- 定力：标语/自我提醒 -->
+        <section id="resolvePanel" class="hidden mb-10 border-b border-borderSubtle/70 pb-6">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] uppercase tracking-[0.3em] text-textMuted font-light">核心定力 · Target</span>
+                <span class="text-[10px] text-textMuted/60 font-light tracking-wider">点按可编辑</span>
+            </div>
+            <p id="resolveMotto"
+               class="resolve-editable font-serif text-sm md:text-base font-light leading-relaxed text-textMain cursor-text tracking-wide"
+               contenteditable="true"
+               spellcheck="false"
+               data-placeholder="写下一句提醒自己的话…"></p>
+        </section>
+
+        <!-- 动态卡片列表区 -->
+        <div id="archiveGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 md:gap-x-12 md:gap-y-16">
+            <!-- 动态生成卡片 -->
+        </div>
+
+        <!-- 空状态提示 -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-24 md:py-32 text-center px-6">
+            <p id="emptyText" class="font-serif text-sm md:text-base text-textMuted mb-4 italic font-light tracking-wide leading-relaxed">“暂无灵感收录，开启你的美学建构吧。”</p>
+            <button id="emptyBtn" onclick="handleAddClick()" class="text-xs uppercase tracking-widest pb-1 border-b border-textMain text-textMain hover:opacity-75">添加记录</button>
+        </div>
+    </main>
+
+    <!-- 底部预留图标区域 -->
+    <footer class="w-full py-12 px-6 flex flex-col items-center justify-center mt-auto">
+        <img src="bottom.png" alt="Footer Icon" class="w-6 h-6 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300" onerror="this.style.display='none'">
+    </footer>
+
+    <!-- 模态框 1：新增美学灵感切片 -->
+    <div id="uploadModal" class="fixed inset-0 bg-textMain/15 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-cream max-w-xl w-full p-6 md:p-14 editorial-shadow relative max-h-[95vh] overflow-y-auto modal-content-mobile">
+            <button onclick="closeModal()" class="absolute top-6 right-6 md:top-8 md:right-8 text-textMuted hover:text-textMain text-xs uppercase tracking-wider">关闭 &times;</button>
+
+            <h2 class="font-serif text-xl md:text-2xl font-light mb-2 pr-10">捕捉灵感切片</h2>
+            <p class="text-xs text-textMuted mb-8 md:mb-10 tracking-wider font-light">上传视觉参考，记录书页、网页瞬间或直觉碎碎念。</p>
+
+            <form id="archiveForm" onsubmit="saveArchive(event)" class="space-y-6 md:space-y-8">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-textMuted mb-3 font-light">视觉参考图片 *</label>
+                    <div id="dropZone" class="p-8 md:p-10 text-center cursor-pointer hover:opacity-80 transition-all bg-stoneLight/20 border border-transparent"
+                         onclick="document.getElementById('imageInput').click()"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event)">
+                        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                        <div id="uploadPrompt" class="space-y-2">
+                            <p class="text-sm text-textMain font-light">点击或拖拽图片至此处</p>
+                            <p class="text-[10px] text-textMuted uppercase tracking-wider">支持 JPG, PNG, WEBP</p>
+                        </div>
+                        <img id="imagePreview" class="hidden max-h-48 mx-auto object-contain" alt="Preview">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">切片标题 / 主题 *</label>
+                        <input type="text" id="itemTitle" required placeholder="例如：某本独立杂志排版研究" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">核心分类</label>
+                        <select id="itemTag" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                            <option value="色彩">色彩 (Color)</option>
+                            <option value="材质">材质 (Material)</option>
+                            <option value="书籍">书籍 (Books)</option>
+                            <option value="网页">网页 (Web)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">相关网页链接 (URL)</label>
+                    <input type="url" id="itemLink" placeholder="https://example.com" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-textMuted mb-3 font-light">灵感语音备忘录 (Voice Memo)</label>
+                    <div class="flex items-center gap-4 bg-stoneLight/20 p-4">
+                        <button type="button" id="recordBtn" onclick="toggleRecording()" class="w-10 h-10 rounded-full border border-textMain flex items-center justify-center hover:bg-textMain hover:text-cream transition-all shrink-0">
+                            <span id="recordIcon" class="w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <p id="recordStatus" class="text-xs text-textMuted font-light">点击左侧按钮开始录音，记录你的美学解构</p>
+                            <audio id="audioPlayback" controls class="hidden w-full mt-2 h-8"></audio>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">美学解构 / 为什么喜欢？</label>
+                    <textarea id="itemDesc" rows="3" placeholder="记录下打动你的版式设计、字体选择或排版细节..." class="w-full bg-transparent border-b border-borderSubtle py-3 text-sm focus:outline-none focus:border-textMain transition-all resize-none"></textarea>
+                </div>
+
+                <div class="pt-4 md:pt-6 flex justify-end gap-6">
+                    <button type="button" onclick="closeModal()" class="text-xs uppercase tracking-widest text-textMuted px-4 py-3 hover:text-textMain font-light">取消</button>
+                    <button type="submit" class="bg-textMain text-cream text-xs uppercase tracking-widest px-8 py-3 hover:opacity-90 transition-all">沉淀切片</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模态框 2：新增定力记录（针对训练的事与句子分别独立设置） -->
+    <div id="resolveModal" class="fixed inset-0 bg-textMain/15 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-cream max-w-lg w-full p-6 md:p-12 editorial-shadow relative max-h-[95vh] overflow-y-auto modal-content-mobile">
+            <button onclick="closeResolveModal()" class="absolute top-6 right-6 md:top-8 md:right-8 text-textMuted hover:text-textMain text-xs uppercase tracking-wider">关闭 &times;</button>
+
+            <h2 id="resolveModalTitle" class="font-serif text-xl md:text-2xl font-light mb-2 pr-10">新增训练的事</h2>
+            <p id="resolveModalDesc" class="text-xs text-textMuted mb-8 tracking-wider font-light">记录你想训练的具体事情或习惯方向。</p>
+
+            <form id="resolveForm" onsubmit="saveResolveItem(event)" class="space-y-6">
+                <div>
+                    <label id="resolveLabel1" class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">想训练的事 *</label>
+                    <input type="text" id="resolveTitle" required placeholder="例如：专注阅读30分钟 / 英语口语复述" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                </div>
+                <div>
+                    <label id="resolveLabel2" class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">补充说明 / 目标细则</label>
+                    <textarea id="resolveContent" rows="4" placeholder="具体的方法、心境或要点，无需打卡，随心记录..." class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all resize-none font-serif"></textarea>
+                </div>
+                <div class="pt-4 flex justify-end gap-6">
+                    <button type="button" onclick="closeResolveModal()" class="text-xs uppercase tracking-widest text-textMuted px-4 py-3 hover:text-textMain font-light">取消</button>
+                    <button type="submit" class="bg-textMain text-cream text-xs uppercase tracking-widest px-8 py-3 hover:opacity-90 transition-all">保存记录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 轻提示元素 -->
+    <div id="resolveToast" class="resolve-toast"></div>
+
+    <script>
+        const DB_NAME = "AestheticArchiveDB";
+        const STORE_NAME = "archives";
+        const RESOLVE_STORE = "resolve";
+        const RESOLVE_RECORDS_STORE = "resolve_records";
+
+        let db = null;
+        let currentImageBase64 = "";
+        let audioBlob = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        
+        let currentFilter = 'all'; 
+        let currentResolveSub = 'train'; // 'train' 或 'quote'
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const toast = document.getElementById('resolveToast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+
+        function initDB() {
+            const request = indexedDB.open(DB_NAME, 3);
+            request.onerror = (event) => console.error("IndexedDB error:", event.target.error);
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                loadContent();
+                loadResolve();
+            };
+            request.onupgradeneeded = (event) => {
+                const database = event.target.result;
+                if (!database.objectStoreNames.contains(STORE_NAME)) {
+                    database.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+                }
+                if (!database.objectStoreNames.contains(RESOLVE_STORE)) {
+                    database.createObjectStore(RESOLVE_STORE, { keyPath: "key" });
+                }
+                if (!database.objectStoreNames.contains(RESOLVE_RECORDS_STORE)) {
+                    database.createObjectStore(RESOLVE_RECORDS_STORE, { keyPath: "id", autoIncrement: true });
+                }
+            };
+        }
+
+        function loadResolve() {
+            if (!db) return;
+            const tx = db.transaction([RESOLVE_STORE], "readonly");
+            const store = tx.objectStore(RESOLVE_STORE);
+            const mottoReq = store.get("motto");
+            mottoReq.onsuccess = () => {
+                const val = mottoReq.result ? mottoReq.result.value : "";
+                const el = document.getElementById('resolveMotto');
+                el.innerText = val;
+                el.classList.toggle('text-textMuted/60', !val);
+            };
+        }
+
+        function saveResolveField(key, value) {
+            if (!db) return;
+            const tx = db.transaction([RESOLVE_STORE], "readwrite");
+            const store = tx.objectStore(RESOLVE_STORE);
+            store.put({ key, value });
+        }
+
+        function bindResolveEditable() {
+            const mottoEl = document.getElementById('resolveMotto');
+            mottoEl.addEventListener('blur', () => {
+                const text = mottoEl.innerText.trim();
+                saveResolveField('motto', text);
+                mottoEl.classList.toggle('text-textMuted/60', !text);
+                showToast("已保存");
+            });
+            mottoEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    mottoEl.blur();
+                }
+            });
+        }
+
+        function handleAddClick() {
+            if (currentFilter === '定力') {
+                openResolveModal();
+            } else {
+                openModal();
+            }
+        }
+
+        function openModal() {
+            document.getElementById('uploadModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            document.getElementById('uploadModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            document.getElementById('archiveForm').reset();
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadPrompt').classList.remove('hidden');
+            currentImageBase64 = "";
+            audioBlob = null;
+            document.getElementById('audioPlayback').classList.add('hidden');
+            document.getElementById('recordStatus').innerText = "点击左侧按钮开始录音，记录你的美学解构";
+            document.getElementById('dropZone').classList.remove('drag-over');
+        }
+
+        function openResolveModal() {
+            const titleEl = document.getElementById('resolveModalTitle');
+            const descEl = document.getElementById('resolveModalDesc');
+            const label1 = document.getElementById('resolveLabel1');
+            const label2 = document.getElementById('resolveLabel2');
+            const titleInput = document.getElementById('resolveTitle');
+            const contentInput = document.getElementById('resolveContent');
+
+            if (currentResolveSub === 'train') {
+                titleEl.innerText = '新增训练的事';
+                descEl.innerText = '纯粹记录你想专注或训练的事情，不设打卡负担。';
+                label1.innerText = '想训练的事 *';
+                titleInput.placeholder = '例如：做极简设计练习 / 保持直立坐姿';
+                label2.innerText = '注意事项 / 细节拆解';
+                contentInput.placeholder = '写下要点、预期心境或方法...';
+            } else {
+                titleEl.innerText = '添加句子';
+                descEl.innerText = '记录触动你的诗句、书摘或直觉碎碎念。';
+                label1.innerText = '句子 / 摘录 *';
+                titleInput.placeholder = '输入想留存的句子...';
+                label2.innerText = '出处 / 美学感悟';
+                contentInput.placeholder = '来源书目、作者或打动你的理由...';
+            }
+
+            document.getElementById('resolveModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeResolveModal() {
+            document.getElementById('resolveModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            document.getElementById('resolveForm').reset();
+        }
+
+        function saveResolveItem(event) {
+            event.preventDefault();
+            const title = document.getElementById('resolveTitle').value.trim();
+            const content = document.getElementById('resolveContent').value.trim();
+            if (!title) return;
+
+            const record = {
+                subType: currentResolveSub,
+                title,
+                content,
+                createdAt: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+            };
+
+            const tx = db.transaction([RESOLVE_RECORDS_STORE], "readwrite");
+            tx.objectStore(RESOLVE_RECORDS_STORE).add(record).onsuccess = () => {
+                closeResolveModal();
+                loadResolveRecords();
+            };
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageBase64 = e.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = currentImageBase64;
+                    preview.classList.remove('hidden');
+                    document.getElementById('uploadPrompt').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+        function handleDragOver(event) { event.preventDefault(); event.stopPropagation(); document.getElementById('dropZone').classList.add('drag-over'); }
+        function handleDragLeave(event) { event.preventDefault(); event.stopPropagation(); document.getElementById('dropZone').classList.remove('drag-over'); }
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('dropZone').classList.remove('drag-over');
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageBase64 = e.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = currentImageBase64;
+                    preview.classList.remove('hidden');
+                    document.getElementById('uploadPrompt').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function toggleRecording() {
+            const statusText = document.getElementById('recordStatus');
+            const recordIcon = document.getElementById('recordIcon');
+            const playback = document.getElementById('audioPlayback');
+
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                    mediaRecorder.onstop = () => {
+                        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        playback.src = URL.createObjectURL(audioBlob);
+                        playback.classList.remove('hidden');
+                        statusText.innerText = "语音录制完成。支持试听。";
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordIcon.classList.remove('bg-red-500');
+                    recordIcon.classList.add('bg-textMain', 'animate-pulse');
+                    statusText.innerText = "正在录音... 点击停止";
+                } catch (err) {
+                    statusText.innerText = "无法访问麦克风。";
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordIcon.classList.remove('bg-textMain', 'animate-pulse');
+                recordIcon.classList.add('bg-red-500');
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve) => {
+                if (!blob) return resolve(null);
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function saveArchive(event) {
+            event.preventDefault();
+            if (!currentImageBase64) {
+                alert("请至少上传一张视觉参考图片。");
+                return;
+            }
+            const record = {
+                title: document.getElementById('itemTitle').value.trim(),
+                tag: document.getElementById('itemTag').value,
+                link: document.getElementById('itemLink').value.trim(),
+                desc: document.getElementById('itemDesc').value.trim(),
+                image: currentImageBase64,
+                audio: await blobToBase64(audioBlob),
+                createdAt: new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+            };
+            const tx = db.transaction([STORE_NAME], "readwrite");
+            tx.objectStore(STORE_NAME).add(record).onsuccess = () => {
+                closeModal();
+                loadArchives();
+            };
+        }
+
+        function filterTag(tag) {
+            currentFilter = tag;
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.className = "tag-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all shrink-0";
+            });
+            const activeBtn = document.getElementById(`tag-${tag}`);
+            if (activeBtn) {
+                activeBtn.className = "tag-btn text-textMain font-medium pb-1 border-b border-textMain transition-all shrink-0";
+            }
+
+            const resolveSubNav = document.getElementById('resolveSubNav');
+            const resolvePanel = document.getElementById('resolvePanel');
+
+            if (tag === '定力') {
+                resolveSubNav.classList.remove('hidden');
+                resolvePanel.classList.remove('hidden');
+                loadResolveRecords();
+            } else {
+                resolveSubNav.classList.add('hidden');
+                resolvePanel.classList.add('hidden');
+                loadArchives();
+            }
+        }
+
+        function switchResolveSub(subType) {
+            currentResolveSub = subType;
+            document.querySelectorAll('.resolve-sub-btn').forEach(btn => {
+                btn.className = "resolve-sub-btn text-textMuted hover:text-textMain pb-1 border-b border-transparent transition-all";
+            });
+            const activeBtn = document.getElementById(`resolve-sub-${subType}`);
+            if (activeBtn) {
+                activeBtn.className = "resolve-sub-btn text-textMain font-medium pb-1 border-b border-textMain transition-all";
+            }
+            loadResolveRecords();
+        }
+
+        function loadArchives() {
+            if (!db) return;
+            const tx = db.transaction([STORE_NAME], "readonly");
+            tx.objectStore(STORE_NAME).getAll().onsuccess = (event) => {
+                const items = event.target.result;
+                let filtered = currentFilter === 'all' ? items : items.filter(i => i.tag === currentFilter);
+                document.getElementById('recordCount').innerText = `收录：${filtered.length}`;
+                renderArchivesGrid(filtered, false);
+            };
+        }
+
+        function loadResolveRecords() {
+            if (!db) return;
+            const tx = db.transaction([RESOLVE_RECORDS_STORE], "readonly");
+            tx.objectStore(RESOLVE_RECORDS_STORE).getAll().onsuccess = (event) => {
+                const items = event.target.result;
+                const filtered = items.filter(i => i.subType === currentResolveSub);
+                document.getElementById('recordCount').innerText = `记录：${filtered.length}`;
+                renderArchivesGrid(filtered, true);
+            };
+        }
+
+        function renderArchivesGrid(items, isResolveMode) {
+            const grid = document.getElementById('archiveGrid');
+            const emptyState = document.getElementById('emptyState');
+            const emptyText = document.getElementById('emptyText');
+
+            if (items.length === 0) {
+                grid.innerHTML = '';
+                if (isResolveMode) {
+                    emptyText.innerText = currentResolveSub === 'train' ? "“记录你想专注训练的事，无需打卡，从容积累。”" : "“倾听字句之间的呼吸，记录打动你的那些句子。”";
+                } else {
+                    emptyText.innerText = "“暂无灵感收录，开启你的美学建构吧。”";
+                }
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = '';
+            const sorted = [...items].sort((a, b) => b.id - a.id);
+
+            sorted.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "group flex flex-col space-y-3 md:space-y-4 border-b border-borderSubtle/30 pb-6 sm:border-none sm:pb-0";
+
+                if (isResolveMode) {
+                    if (item.subType === 'quote') {
+                        // 句子的专属展示（有呼吸感的宋体，字号精巧轻盈）
+                        card.innerHTML = `
+                            <div class="bg-stoneLight/20 p-6 md:p-7 flex flex-col justify-between relative min-h-[150px] border border-borderSubtle/40 hover:border-accent/30 transition-all">
+                                <button onclick="deleteResolveRecord(${item.id})" class="absolute top-4 right-4 text-textMuted/60 hover:text-red-600 text-xs w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" title="删除">&times;</button>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-[0.25em] text-accent/80 font-light block mb-3">Quote · 句子</span>
+                                    <blockquote class="font-serif text-sm md:text-base font-light text-textMain tracking-wide leading-relaxed mb-3">
+                                        “${escapeHtml(item.title)}”
+                                    </blockquote>
+                                    ${item.content ? `<p class="font-serif text-xs text-textMuted font-light leading-relaxed tracking-wide italic border-l border-borderSubtle/60 pl-3 my-2">${escapeHtml(item.content)}</p>` : ''}
+                                </div>
+                                <span class="text-[9px] text-textMuted/70 font-light tracking-wider pt-3 block">${item.createdAt}</span>
+                            </div>
+                        `;
+                    } else {
+                        // 训练的事（专注不打卡，纯记录）
+                        card.innerHTML = `
+                            <div class="bg-stoneLight/20 p-6 flex flex-col justify-between relative min-h-[150px] border border-borderSubtle/40 hover:border-accent/30 transition-all">
+                                <button onclick="deleteResolveRecord(${item.id})" class="absolute top-4 right-4 text-textMuted/60 hover:text-red-600 text-xs w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" title="删除">&times;</button>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-[0.25em] text-accent/80 font-light block mb-2">Practice · 想训练的事</span>
+                                    <h3 class="font-serif text-sm md:text-base font-light tracking-wide text-textMain mb-2">${escapeHtml(item.title)}</h3>
+                                    ${item.content ? `<p class="text-xs text-textMuted font-light leading-relaxed whitespace-pre-wrap tracking-wide">${escapeHtml(item.content)}</p>` : ''}
+                                </div>
+                                <span class="text-[9px] text-textMuted/70 font-light tracking-wider pt-3 block">${item.createdAt}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 常规视觉切片卡片
+                    let audioHtml = item.audio ? `<div class="mt-3 pt-3 border-t border-borderSubtle/50"><audio controls src="${item.audio}" class="w-full h-8 opacity-75"></audio></div>` : '';
+                    let linkHtml = item.link ? `<div class="pt-2"><a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs text-textMain hover:text-accent tracking-wider font-light border-b border-textMain pb-0.5 transition-all"><span>访问网页源</span><span class="text-[10px]">&nearr;</span></a></div>` : '';
+
+                    card.innerHTML = `
+                        <div class="overflow-hidden bg-stoneLight/25 relative aspect-[4/5]">
+                            <img src="${item.image}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
+                            <span class="absolute top-4 left-4 bg-cream/85 backdrop-blur-md text-textMain text-[10px] uppercase tracking-widest px-3 py-1 font-light">${item.tag}</span>
+                            <button onclick="deleteArchive(${item.id})" class="absolute top-4 right-4 bg-cream/85 backdrop-blur-md text-textMuted hover:text-red-600 text-xs w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" title="删除切片">&times;</button>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex justify-between items-baseline gap-3">
+                                <h3 class="font-serif text-base md:text-lg font-light tracking-wide text-textMain">${escapeHtml(item.title)}</h3>
+                                <span class="text-[10px] text-textMuted font-light shrink-0">${item.createdAt}</span>
+                            </div>
+                            ${item.desc ? `<p class="text-xs text-textMuted font-light leading-relaxed">${escapeHtml(item.desc)}</p>` : ''}
+                            ${linkHtml}
+                            ${audioHtml}
+                        </div>
+                    `;
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        function deleteArchive(id) {
+            if (!confirm('确认删除这条灵感切片吗？')) return;
+            const tx = db.transaction([STORE_NAME], "readwrite");
+            tx.objectStore(STORE_NAME).delete(id).onsuccess = () => loadArchives();
+        }
+
+        function deleteResolveRecord(id) {
+            if (!confirm('确认删除这条记录吗？')) return;
+            const tx = db.transaction([RESOLVE_RECORDS_STORE], "readwrite");
+            tx.objectStore(RESOLVE_RECORDS_STORE).delete(id).onsuccess = () => loadResolveRecords();
+        }
+
+        function loadContent() {
+            if (currentFilter === '定力') {
+                loadResolveRecords();
+            } else {
+                loadArchives();
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        window.onload = function() {
+            initDB();
+            bindResolveEditable();
+        };
+    </script>
+</body>
+</html>
