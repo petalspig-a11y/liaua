@@ -159,8 +159,7 @@
             <p id="resolveMotto"
                class="resolve-editable font-serif text-sm md:text-base font-light leading-relaxed text-textMain cursor-text tracking-wide"
                contenteditable="true"
-               spellcheck="false"
-               data-placeholder="写下一句提醒自己的话…"></p>
+               spellcheck="false"></p>
         </section>
 
         <!-- 动态卡片列表区 -->
@@ -227,7 +226,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">切片标题 / 主题 *</label>
-                        <input type="text" id="itemTitle" required placeholder="例如：某本独立杂志排版研究" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                        <input type="text" id="itemTitle" required class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
                     </div>
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">核心分类</label>
@@ -242,7 +241,7 @@
 
                 <div>
                     <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">相关网页链接 (URL)</label>
-                    <input type="url" id="itemLink" placeholder="https://example.com" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                    <input type="url" id="itemLink" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
                 </div>
 
                 <div>
@@ -263,7 +262,7 @@
 
                 <div>
                     <label class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">美学解构 / 为什么喜欢？</label>
-                    <textarea id="itemDesc" rows="3" placeholder="记录下打动你的版式设计、字体选择或排版细节..." class="w-full bg-transparent border-b border-borderSubtle py-3 text-sm focus:outline-none focus:border-textMain transition-all resize-none"></textarea>
+                    <textarea id="itemDesc" rows="3" class="w-full bg-transparent border-b border-borderSubtle py-3 text-sm focus:outline-none focus:border-textMain transition-all resize-none"></textarea>
                 </div>
 
                 <div class="pt-4 md:pt-6 flex justify-end gap-6">
@@ -286,11 +285,11 @@
                 <input type="hidden" id="editingResolveId" value="">
                 <div>
                     <label id="resolveLabel1" class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">想训练的事 *</label>
-                    <input type="text" id="resolveTitle" required placeholder="例如：专注阅读30分钟 / 英语口语复述" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
+                    <input type="text" id="resolveTitle" required class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all">
                 </div>
                 <div>
                     <label id="resolveLabel2" class="block text-xs uppercase tracking-wider text-textMuted mb-2 font-light">补充说明 / 目标细则</label>
-                    <textarea id="resolveContent" rows="4" placeholder="具体的方法、心境或要点，无需打卡，随心记录..." class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all resize-none font-serif"></textarea>
+                    <textarea id="resolveContent" rows="4" class="w-full bg-transparent border-b border-borderSubtle py-2 text-sm focus:outline-none focus:border-textMain transition-all resize-none font-serif"></textarea>
                 </div>
                 <div class="pt-4 flex justify-end gap-6">
                     <button type="button" onclick="closeResolveModal()" class="text-xs uppercase tracking-widest text-textMuted px-4 py-3 hover:text-textMain font-light">取消</button>
@@ -465,16 +464,12 @@
                 titleEl.innerText = editData ? '编辑训练的事' : '新增训练的事';
                 descEl.innerText = '纯粹记录你想专注或训练的事情，不设打卡负担。';
                 label1.innerText = '想训练的事 *';
-                titleInput.placeholder = '例如：做极简设计练习 / 保持直立坐姿';
                 label2.innerText = '注意事项 / 细节拆解';
-                contentInput.placeholder = '写下要点、预期心境或方法...';
             } else {
                 titleEl.innerText = editData ? '编辑句子' : '添加句子';
                 descEl.innerText = '记录触动你的诗句、书摘或直觉碎碎念。';
                 label1.innerText = '句子 / 摘录 *';
-                titleInput.placeholder = '输入想留存的句子...';
                 label2.innerText = '出处 / 美学感悟';
-                contentInput.placeholder = '来源书目、作者或打动你的理由...';
             }
 
             if (editData) {
@@ -851,8 +846,8 @@
                     let linkHtml = item.link ? `<div class="pt-2"><a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs text-textMain hover:text-textMuted tracking-wider font-light border-b border-textMain pb-0.5 transition-all"><span>访问网页源</span><span class="text-[10px]">&nearr;</span></a></div>` : '';
 
                     card.innerHTML = `
-                        <div class="overflow-hidden bg-stoneLight relative aspect-[4/5] border border-borderSubtle/50">
-                            <img src="${item.image}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
+                        <div class="overflow-hidden bg-stoneLight relative w-full border border-borderSubtle/50 flex items-center justify-center">
+                            <img src="${item.image}" alt="${escapeHtml(item.title)}" class="w-full h-auto block object-contain group-hover:scale-[1.02] transition-transform duration-700 ease-out">
                             <span class="absolute top-3 left-3 bg-cream/90 backdrop-blur-md text-textMain text-[10px] uppercase tracking-widest px-2.5 py-1 font-light border border-borderSubtle/40">${item.tag}</span>
                             <div class="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onclick="editArchive(${item.id})" class="bg-cream/90 backdrop-blur-md text-textMain hover:bg-textMain hover:text-cream text-[10px] uppercase tracking-wider px-2 py-1 transition-colors border border-borderSubtle/40">编辑</button>
